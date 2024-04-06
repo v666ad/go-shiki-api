@@ -156,3 +156,20 @@ func (c *Client) UnignoreUserRequest(userID uint) error {
 
 	return nil
 }
+
+func (c *Client) GetTopic(topicID uint) (*types.Topic, error) {
+	resp, err := c.MakeRequest(http.MethodGet, "api/topics/"+strconv.FormatUint(uint64(topicID), 10), nil, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	var topic types.Topic
+
+	err = json.NewDecoder(resp.Body).Decode(&topic)
+	if err != nil {
+		return nil, err
+	}
+
+	return &topic, nil
+}

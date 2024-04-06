@@ -72,7 +72,13 @@ func (c *Client) MakeRequest(method string, path string, urlParams url.Values, d
 		return nil, err
 	}
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode < 200 || resp.StatusCode > 300 {
+		switch resp.StatusCode {
+		case 404:
+			return nil, ErrNotFound
+		case 429:
+			return nil, ErrTooManyRequests
+		}
 		return nil, errors.New("bad status " + resp.Request.Method + " " + req.URL.String() + " -> " + resp.Status)
 	}
 

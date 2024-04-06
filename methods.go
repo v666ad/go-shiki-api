@@ -173,3 +173,29 @@ func (c *Client) GetTopic(topicID uint) (*types.Topic, error) {
 
 	return &topic, nil
 }
+
+func (c *Client) GetComments(commentableID uint, commentableType string, page, limit uint, desc bool) ([]types.Comment, error) {
+	params := make(url.Values)
+	params.Set("commentable_id", strconv.FormatUint(uint64(commentableID), 10))
+	params.Set("commentable_type", commentableType)
+	params.Set("page", strconv.FormatUint(uint64(page), 10))
+	params.Set("limit", strconv.FormatUint(uint64(limit), 10))
+	if !desc { // params.Set("desc", strconv.FormatBool(desc)) - bad status GET https://shikimori.one/api/comments?commentable_id=3413&commentable_type=Topic&desc=true&limit=10&page=1 -> 422 Unprocessable Entity
+		params.Set("desc", "0")
+	}
+
+	resp, err := c.MakeRequest(http.MethodGet, "api/comments", params, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	comments := make([]types.Comment, limit)
+
+	err = json.NewDecoder(resp.Body).Decode(&comments)
+	if err != nil {
+		return nil, err
+	}
+
+	return comments, nil
+}

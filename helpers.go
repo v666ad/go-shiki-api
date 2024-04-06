@@ -9,7 +9,7 @@ var (
 )
 
 func GetTime(shikiTime string) (*time.Time, error) {
-	t, err := time.Parse(shikiTime, ShikiTimeFormat)
+	t, err := time.Parse(ShikiTimeFormat, shikiTime)
 	if err != nil {
 		return nil, err
 	}

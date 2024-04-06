@@ -199,3 +199,20 @@ func (c *Client) GetComments(commentableID uint, commentableType string, page, l
 
 	return comments, nil
 }
+
+func (c *Client) GetComment(commentID uint) (*types.Comment, error) {
+	resp, err := c.MakeRequest(http.MethodGet, "api/comments/"+strconv.FormatUint(uint64(commentID), 10), nil, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	var comment types.Comment
+
+	err = json.NewDecoder(resp.Body).Decode(&comment)
+	if err != nil {
+		return nil, err
+	}
+
+	return &comment, nil
+}

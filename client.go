@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/v666ad/go-shiki/types"
+	"github.com/v666ad/go-shiki-api/types"
 )
 
 var (
@@ -44,7 +44,15 @@ func NewClient(cookies string, xCsrfToken string) (*Client, error) {
 }
 
 func (c *Client) MakeRequest(method string, path string, urlParams url.Values, data io.Reader) (*http.Response, error) {
-	req, err := http.NewRequest(method, ShikiSchema+"://"+ShikiDomain+"/"+path+"?"+urlParams.Encode(), data)
+	var (
+		req *http.Request
+		err error
+	)
+	if urlParams != nil {
+		req, err = http.NewRequest(method, ShikiSchema+"://"+ShikiDomain+"/"+path+"?"+urlParams.Encode(), data)
+	} else {
+		req, err = http.NewRequest(method, ShikiSchema+"://"+ShikiDomain+"/"+path, data)
+	}
 	if err != nil {
 		return nil, err
 	}

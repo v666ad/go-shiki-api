@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/v666ad/go-shiki/types"
+	"github.com/v666ad/go-shiki-api/types"
 )
 
 func (c *Client) GetMe() (*types.Me, error) {
@@ -137,7 +137,7 @@ func (c *Client) GetFriends(userID, page, limit uint, desc bool) ([]types.User, 
 	return users, nil
 }
 
-func (c *Client) IgnoreRequest(userID uint) error {
+func (c *Client) IgnoreUserRequest(userID uint) error {
 	resp, err := c.MakeRequest(http.MethodPost, "api/ignores/"+strconv.FormatUint(uint64(userID), 10), nil, nil)
 	if err != nil {
 		return err
@@ -147,7 +147,7 @@ func (c *Client) IgnoreRequest(userID uint) error {
 	return nil
 }
 
-func (c *Client) UnignoreRequest(userID uint) error {
+func (c *Client) UnignoreUserRequest(userID uint) error {
 	resp, err := c.MakeRequest(http.MethodDelete, "api/ignores/"+strconv.FormatUint(uint64(userID), 10), nil, nil)
 	if err != nil {
 		return err

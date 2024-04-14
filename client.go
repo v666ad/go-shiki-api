@@ -78,6 +78,8 @@ func (c *Client) MakeRequest(method string, path string, urlParams url.Values, d
 			return nil, ErrForbidden
 		case 404:
 			return nil, ErrNotFound
+		case 422:
+			return nil, ErrUnprocessableEntity
 		case 429:
 			return nil, ErrTooManyRequests
 		case 500:

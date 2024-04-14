@@ -27,13 +27,17 @@ func (c *Client) GetMe() (*types.Me, error) {
 }
 
 func (c *Client) ClubInvite(userID, clubID uint) error {
-	clubInvite := types.ClubInvite{
+	type clubInvite struct {
+		ClubID uint `json:"club_id"`
+		SrcID  uint `json:"src_id"`
+		DstID  uint `json:"dst_id"`
+	}
+
+	payload, err := json.Marshal(&clubInvite{
 		ClubID: clubID,
 		SrcID:  c.Me.ID,
 		DstID:  userID,
-	}
-
-	payload, err := json.Marshal(clubInvite)
+	})
 	if err != nil {
 		return err
 	}
@@ -94,7 +98,7 @@ func (c *Client) GetUsers(page, limit uint, desc bool) ([]types.User, error) {
 	}
 	defer resp.Body.Close()
 
-	users := make([]types.User, limit)
+	users := make([]types.User, 0, limit)
 
 	err = json.NewDecoder(resp.Body).Decode(&users)
 	if err != nil {
@@ -121,7 +125,7 @@ func (c *Client) GetFriends(userID, page, limit uint, desc bool) ([]types.User, 
 	}
 	defer resp.Body.Close()
 
-	users := make([]types.User, limit)
+	users := make([]types.User, 0, limit)
 
 	err = json.NewDecoder(resp.Body).Decode(&users)
 	if err != nil {
@@ -190,7 +194,7 @@ func (c *Client) GetComments(commentableID uint, commentableType string, page, l
 	}
 	defer resp.Body.Close()
 
-	comments := make([]types.Comment, limit)
+	comments := make([]types.Comment, 0, limit)
 
 	err = json.NewDecoder(resp.Body).Decode(&comments)
 	if err != nil {

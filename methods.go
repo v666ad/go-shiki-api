@@ -216,3 +216,30 @@ func (c *Client) GetComment(commentID uint) (*types.Comment, error) {
 
 	return &comment, nil
 }
+
+func (c *Client) SendComment(commentableID uint, commentableType string, text string, isOfftopic bool) error {
+	type sendComment struct {
+		CommentableID   uint   `json:"commentable_id"`
+		CommentableType string `json:"commentable_type"`
+		Body            string `json:"body"`
+		IsOfftopic      bool   `json:"is_offtopic"`
+	}
+
+	payload, err := json.Marshal(&sendComment{
+		CommentableID:   commentableID,
+		CommentableType: commentableType,
+		Body:            text,
+		IsOfftopic:      isOfftopic,
+	})
+	if err != nil {
+		return err
+	}
+
+	resp, err := c.MakeRequest(http.MethodPost, "api/comments", nil, bytes.NewBuffer(payload))
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	return nil
+}

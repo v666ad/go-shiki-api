@@ -16,11 +16,6 @@ var (
 	UserAgent   = "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0"
 )
 
-const (
-	TypeTopic = "Topic"
-	TypeUser  = "User"
-)
-
 type Client struct {
 	*types.Me
 	Cookies    string
@@ -72,14 +67,24 @@ func (c *Client) MakeRequest(method string, path string, urlParams url.Values, d
 		return nil, err
 	}
 
-	if resp.StatusCode < 200 || resp.StatusCode > 300 {
+	if resp.StatusCode < 200 || resp.StatusCode > 299 {
+
 		switch resp.StatusCode {
+		case 400:
+			return nil, ErrBadRequest
+		case 401:
+			return nil, ErrUnauthorized
+		case 403:
+			return nil, ErrForbidden
 		case 404:
 			return nil, ErrNotFound
 		case 429:
 			return nil, ErrTooManyRequests
+		case 500:
+			return nil, ErrInternalServer
+		default:
+			return nil, errors.New("bad status " + resp.Request.Method + " " + req.URL.String() + " -> " + resp.Status)
 		}
-		return nil, errors.New("bad status " + resp.Request.Method + " " + req.URL.String() + " -> " + resp.Status)
 	}
 
 	return resp, err

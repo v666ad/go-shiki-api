@@ -3,6 +3,7 @@ package shikimori
 import (
 	"bytes"
 	"encoding/json"
+	"io"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -246,4 +247,36 @@ func (c *Client) SendComment(commentableID uint, commentableType string, text st
 	defer resp.Body.Close()
 
 	return nil
+}
+
+func (c *Client) CommentPreview(text string) ([]byte, error) {
+	type commentPreview struct {
+		Comment struct {
+			Body string `json:"body"`
+		} `json:"comment"`
+	}
+
+	payload, err := json.Marshal(&commentPreview{
+		Comment: struct {
+			Body string `json:"body"`
+		}{
+			text,
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.MakeRequest(http.MethodPost, "comments/preview", nil, bytes.NewBuffer(payload))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return data, nil
 }

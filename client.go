@@ -91,3 +91,7 @@ func (c *Client) MakeRequest(method string, path string, urlParams url.Values, d
 
 	return resp, err
 }
+
+func (c *Client) SetTimeout(t time.Duration) {
+	c.client.Timeout = t
+}

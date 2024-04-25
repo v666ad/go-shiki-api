@@ -17,7 +17,7 @@ var (
 )
 
 type Client struct {
-	*types.Me
+	Me         *types.Me
 	Cookies    string
 	XCsrfToken string
 	client     http.Client

@@ -250,12 +250,12 @@ func (c *Client) SendComment(commentableID uint, commentableType string, text st
 }
 
 func (c *Client) EditComment(commentID uint, text string) error {
-	type sendComment struct {
+	type editComment struct {
 		Body       string `json:"body"`
 		IsOfftopic bool   `json:"is_offtopic"`
 	}
 
-	payload, err := json.Marshal(&sendComment{
+	payload, err := json.Marshal(&editComment{
 		Body: text,
 	})
 	if err != nil {
@@ -263,6 +263,16 @@ func (c *Client) EditComment(commentID uint, text string) error {
 	}
 
 	resp, err := c.MakeRequest(http.MethodPatch, "api/comments/"+strconv.FormatUint(uint64(commentID), 10), nil, bytes.NewBuffer(payload))
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	return nil
+}
+
+func (c *Client) DeleteComment(commentID uint) error {
+	resp, err := c.MakeRequest(http.MethodDelete, "api/comments/"+strconv.FormatUint(uint64(commentID), 10), nil, nil)
 	if err != nil {
 		return err
 	}

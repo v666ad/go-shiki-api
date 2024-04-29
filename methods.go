@@ -222,7 +222,7 @@ func (c *Client) GetComment(commentID uint) (*types.Comment, error) {
 	return &comment, nil
 }
 
-func (c *Client) SendComment(commentableID uint, commentableType string, text string, isOfftopic bool) error {
+func (c *Client) SendComment(commentableID uint, commentableType string, text string, isOfftopic bool) (*types.Comment, error) {
 	type sendComment struct {
 		CommentableID   uint   `json:"commentable_id"`
 		CommentableType string `json:"commentable_type"`
@@ -237,16 +237,23 @@ func (c *Client) SendComment(commentableID uint, commentableType string, text st
 		IsOfftopic:      isOfftopic,
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	resp, err := c.MakeRequest(http.MethodPost, "api/comments", nil, bytes.NewBuffer(payload))
 	if err != nil {
-		return err
+		return nil, err
 	}
+
+	var comment types.Comment
+	err = json.NewDecoder(resp.Body).Decode(&comment)
+	if err != nil {
+		return nil, err
+	}
+
 	defer resp.Body.Close()
 
-	return nil
+	return &comment, nil
 }
 
 func (c *Client) EditComment(commentID uint, text string) error {

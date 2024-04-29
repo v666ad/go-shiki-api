@@ -107,9 +107,7 @@ func (c *Client) GetUsers(page, limit uint, desc bool) ([]types.User, error) {
 	}
 
 	if desc {
-		for i, j := 0, len(users)-1; i < j; i, j = i+1, j-1 {
-			users[i], users[j] = users[j], users[i]
-		}
+		users = reverse(users)
 	}
 
 	return users, nil
@@ -134,9 +132,7 @@ func (c *Client) GetFriends(userID, page, limit uint, desc bool) ([]types.User, 
 	}
 
 	if desc {
-		for i, j := 0, len(users)-1; i < j; i, j = i+1, j-1 {
-			users[i], users[j] = users[j], users[i]
-		}
+		users = reverse(users)
 	}
 
 	return users, nil

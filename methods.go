@@ -249,7 +249,29 @@ func (c *Client) SendComment(commentableID uint, commentableType string, text st
 	return nil
 }
 
-func (c *Client) CommentPreview(text string) ([]byte, error) {
+func (c *Client) EditComment(commentID uint, text string) error {
+	type sendComment struct {
+		Body       string `json:"body"`
+		IsOfftopic bool   `json:"is_offtopic"`
+	}
+
+	payload, err := json.Marshal(&sendComment{
+		Body: text,
+	})
+	if err != nil {
+		return err
+	}
+
+	resp, err := c.MakeRequest(http.MethodPatch, "api/comments/"+strconv.FormatUint(uint64(commentID), 10), nil, bytes.NewBuffer(payload))
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	return nil
+}
+
+func (c *Client) PreviewComment(text string) ([]byte, error) {
 	type commentPreview struct {
 		Comment struct {
 			Body string `json:"body"`

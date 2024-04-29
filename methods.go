@@ -244,14 +244,13 @@ func (c *Client) SendComment(commentableID uint, commentableType string, text st
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
 
 	var comment types.Comment
 	err = json.NewDecoder(resp.Body).Decode(&comment)
 	if err != nil {
 		return nil, err
 	}
-
-	defer resp.Body.Close()
 
 	return &comment, nil
 }

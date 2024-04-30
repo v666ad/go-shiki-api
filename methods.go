@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"mime/multipart"
 	"net/http"
 	"net/textproto"
@@ -321,11 +320,10 @@ func (c *Client) PreviewComment(text string) ([]byte, error) {
 	return data, nil
 }
 
-/* not work */
 func (c *Client) UploadImage(imageName string, image io.Reader) (*types.UploadedImage, error) {
 	const MultipartFormBoundary = "------multipartformboundary"
-	/*
-	 * в заголовке запроса MultipartFormBoundary + UnixMilli
+
+	/* в заголовке запроса MultipartFormBoundary + UnixMilli
 	 * в теле запроса "--" + MultipartFormBoundary + UnixMilli
 	 * в заключении конца тела запроса "--" + MultipartFormBoundary + UnixMilli + "--"
 	 * осталось найти кому пояснить за эту ....
@@ -364,8 +362,6 @@ func (c *Client) UploadImage(imageName string, image io.Reader) (*types.Uploaded
 
 	body.Write([]byte("\r\n--" + boundary + "--"))
 
-	log.Println(body.String())
-
 	contentType := "multipart/form-data; boundary=" + MultipartFormBoundary + endBoundary
 
 	req, err := http.NewRequest(http.MethodPost, ShikiSchema+"://"+ShikiDomain+"/api/user_images", body)
@@ -376,8 +372,6 @@ func (c *Client) UploadImage(imageName string, image io.Reader) (*types.Uploaded
 	req.Header.Set("Content-Type", contentType)
 	req.Header.Set("Cookie", c.Cookies)
 	req.Header.Set("X-CSRF-Token", c.XCsrfToken)
-
-	log.Println(req.Header)
 
 	resp, err := c.client.Do(req)
 	if err != nil {

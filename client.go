@@ -1,7 +1,6 @@
 package shikimori
 
 import (
-	"errors"
 	"io"
 	"net/http"
 	"net/url"
@@ -68,28 +67,10 @@ func (c *Client) MakeRequest(method string, path string, urlParams url.Values, d
 	}
 
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
-
-		switch resp.StatusCode {
-		case 400:
-			return nil, ErrBadRequest
-		case 401:
-			return nil, ErrUnauthorized
-		case 403:
-			return nil, ErrForbidden
-		case 404:
-			return nil, ErrNotFound
-		case 422:
-			return nil, ErrUnprocessableEntity
-		case 429:
-			return nil, ErrTooManyRequests
-		case 500:
-			return nil, ErrInternalServer
-		default:
-			return nil, errors.New("bad status " + resp.Request.Method + " " + req.URL.String() + " -> " + resp.Status)
-		}
+		return nil, getErrorFromBadResponse(resp)
 	}
 
-	return resp, err
+	return resp, nil
 }
 
 func (c *Client) SetTimeout(t time.Duration) {

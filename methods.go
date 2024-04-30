@@ -3,10 +3,16 @@ package shikimori
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
+	"log"
+	"mime/multipart"
 	"net/http"
+	"net/textproto"
 	"net/url"
+	"path"
 	"strconv"
+	"time"
 
 	"github.com/v666ad/go-shiki-api/types"
 )
@@ -313,4 +319,81 @@ func (c *Client) PreviewComment(text string) ([]byte, error) {
 	}
 
 	return data, nil
+}
+
+/* not work */
+func (c *Client) UploadImage(imageName string, image io.Reader) (*types.UploadedImage, error) {
+	const MultipartFormBoundary = "------multipartformboundary"
+	/*
+	 * в заголовке запроса MultipartFormBoundary + UnixMilli
+	 * в теле запроса "--" + MultipartFormBoundary + UnixMilli
+	 * в заключении конца тела запроса "--" + MultipartFormBoundary + UnixMilli + "--"
+	 * осталось найти кому пояснить за эту ....
+	 */
+
+	body := bytes.NewBuffer(nil)
+	multipartForm := multipart.NewWriter(body)
+
+	endBoundary := strconv.FormatUint(uint64(time.Duration(time.Now().UnixNano())/time.Millisecond), 10)
+	boundary := MultipartFormBoundary + endBoundary
+	multipartForm.SetBoundary(boundary)
+
+	multipartForm.WriteField("authenticity_token", c.XCsrfToken)
+
+	h := make(textproto.MIMEHeader)
+	h.Set("Content-Disposition", fmt.Sprintf(`form-data; name="image"; filename="%s"`, url.QueryEscape(imageName)))
+	ext := path.Ext(imageName)
+	switch ext {
+	case ".png":
+		h.Set("Content-Type", "image/png")
+	case ".jpeg", ".jpg":
+		h.Set("Content-Type", "image/jpeg")
+	default:
+		h.Set("Content-Type", "application/octet-stream")
+	}
+
+	imagePart, err := multipartForm.CreatePart(h)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = io.Copy(imagePart, image)
+	if err != nil {
+		return nil, err
+	}
+
+	body.Write([]byte("\r\n--" + boundary + "--"))
+
+	log.Println(body.String())
+
+	contentType := "multipart/form-data; boundary=" + MultipartFormBoundary + endBoundary
+
+	req, err := http.NewRequest(http.MethodPost, ShikiSchema+"://"+ShikiDomain+"/api/user_images", body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Content-Type", contentType)
+	req.Header.Set("Cookie", c.Cookies)
+	req.Header.Set("X-CSRF-Token", c.XCsrfToken)
+
+	log.Println(req.Header)
+
+	resp, err := c.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode < 200 || resp.StatusCode > 299 {
+		return nil, getErrorFromBadResponse(resp)
+	}
+
+	var uploadedImage types.UploadedImage
+	err = json.NewDecoder(resp.Body).Decode(&uploadedImage)
+	if err != nil {
+		return nil, err
+	}
+
+	return &uploadedImage, nil
 }

@@ -3,7 +3,6 @@ package shikimori
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -326,7 +325,6 @@ func (c *Client) UploadImage(imageName string, image io.Reader) (*types.Uploaded
 	/* в заголовке запроса MultipartFormBoundary + UnixMilli
 	 * в теле запроса "--" + MultipartFormBoundary + UnixMilli
 	 * в заключении конца тела запроса "--" + MultipartFormBoundary + UnixMilli + "--"
-	 * осталось найти кому пояснить за эту ....
 	 */
 
 	body := bytes.NewBuffer(nil)
@@ -339,7 +337,7 @@ func (c *Client) UploadImage(imageName string, image io.Reader) (*types.Uploaded
 	multipartForm.WriteField("authenticity_token", c.XCsrfToken)
 
 	h := make(textproto.MIMEHeader)
-	h.Set("Content-Disposition", fmt.Sprintf(`form-data; name="image"; filename="%s"`, url.QueryEscape(imageName)))
+	h.Set("Content-Disposition", `form-data; name="image"; filename="`+url.QueryEscape(imageName)+`"`)
 	ext := path.Ext(imageName)
 	switch ext {
 	case ".png":

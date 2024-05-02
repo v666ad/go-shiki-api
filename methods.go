@@ -321,10 +321,11 @@ func (c *Client) PreviewComment(text string) ([]byte, error) {
 
 func (c *Client) UploadImage(imageName string, image io.Reader) (*types.UploadedImage, error) {
 	const MultipartFormBoundary = "------multipartformboundary"
+	const DashDash = "--"
 
 	/* в заголовке запроса MultipartFormBoundary + UnixMilli
-	 * в теле запроса "--" + MultipartFormBoundary + UnixMilli
-	 * в заключении конца тела запроса "--" + MultipartFormBoundary + UnixMilli + "--"
+	 * в теле запроса DashDash + MultipartFormBoundary + UnixMilli
+	 * в заключении конца тела запроса DashDash + MultipartFormBoundary + UnixMilli + DashDash
 	 */
 
 	body := bytes.NewBuffer(nil)
@@ -358,7 +359,7 @@ func (c *Client) UploadImage(imageName string, image io.Reader) (*types.Uploaded
 		return nil, err
 	}
 
-	body.Write([]byte("\r\n--" + boundary + "--"))
+	body.Write([]byte("\r\n" + DashDash + boundary + DashDash))
 
 	contentType := "multipart/form-data; boundary=" + MultipartFormBoundary + endBoundary
 

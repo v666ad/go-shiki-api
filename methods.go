@@ -409,3 +409,19 @@ func (c *Client) UploadImage(imageName string, image io.Reader) (*types.Uploaded
 
 	return &uploadedImage, nil
 }
+
+func (c *Client) GetCharacter(id uint) (*types.Character, error) {
+	resp, err := c.MakeRequest(http.MethodGet, "api/characters/"+strconv.FormatUint(uint64(id), 10), nil, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	var character types.Character
+	err = json.NewDecoder(resp.Body).Decode(&character)
+	if err != nil {
+		return nil, err
+	}
+
+	return &character, nil
+}

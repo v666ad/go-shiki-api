@@ -92,6 +92,25 @@ func (c *Client) GetUserProfile(userID uint) (*types.UserProfile, error) {
 	return &profile, nil
 }
 
+func (c *Client) GetUserProfileByNickname(nickname string) (*types.UserProfile, error) {
+	params := make(url.Values)
+	params.Set("is_nickname", "1")
+
+	resp, err := c.MakeRequest(http.MethodGet, "api/users/"+url.QueryEscape(nickname), params, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	var profile types.UserProfile
+	err = json.NewDecoder(resp.Body).Decode(&profile)
+	if err != nil {
+		return nil, err
+	}
+
+	return &profile, nil
+}
+
 func (c *Client) GetUsers(page, limit uint, desc bool) ([]types.User, error) {
 	params := make(url.Values)
 	params.Set("page", strconv.FormatUint(uint64(page), 10))

@@ -1,5 +1,7 @@
 package types
 
+import "time"
+
 type TopicForum struct {
 	ID        uint   `json:"id"`
 	Position  uint   `json:"position"`
@@ -14,7 +16,7 @@ type Topic struct {
 	Body          string     `json:"body"`
 	HtmlBody      string     `json:"html_body"`
 	HtmlFooter    string     `json:"html_footer"`
-	CreatedAt     string     `json:"created_at"`
+	CreatedAt     time.Time  `json:"created_at"`
 	CommentsCount uint       `json:"comments_count"`
 	Forum         TopicForum `json:"forum"`
 	User          User       `json:"user"`

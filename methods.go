@@ -425,3 +425,115 @@ func (c *Client) GetCharacter(id uint) (*types.Character, error) {
 
 	return &character, nil
 }
+
+func (c *Client) GetDialogs(page, limit uint) ([]types.Dialog, error) {
+	params := make(url.Values)
+	params.Set("page", strconv.FormatUint(uint64(page), 10))
+	params.Set("limit", strconv.FormatUint(uint64(limit), 10))
+
+	resp, err := c.MakeRequest(http.MethodGet, "api/dialogs", params, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	dialogs := make([]types.Dialog, 0, limit)
+
+	err = json.NewDecoder(resp.Body).Decode(&dialogs)
+	if err != nil {
+		return nil, err
+	}
+
+	return dialogs, nil
+}
+
+func (c *Client) GetMessages(userID uint, page, limit uint) ([]types.Message, error) {
+	params := make(url.Values)
+	params.Set("page", strconv.FormatUint(uint64(page), 10))
+	params.Set("limit", strconv.FormatUint(uint64(limit), 10))
+
+	resp, err := c.MakeRequest(http.MethodGet, "api/dialogs/"+strconv.FormatUint(uint64(userID), 10), params, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	messages := make([]types.Message, 0, limit)
+
+	err = json.NewDecoder(resp.Body).Decode(&messages)
+	if err != nil {
+		return nil, err
+	}
+
+	return messages, nil
+}
+
+func (c *Client) SendMessage(userID uint, text string) (*types.Message, error) {
+	type sendMessage struct {
+		Kind   string `json:"kind"`
+		FromID uint   `json:"from_id"`
+		ToID   uint   `json:"to_id"`
+		Body   string `json:"body"`
+	}
+
+	payload, err := json.Marshal(&sendMessage{
+		Kind:   "Private",
+		FromID: c.Me.ID,
+		ToID:   userID,
+		Body:   text,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.MakeRequest(http.MethodPost, "api/messages", nil, bytes.NewBuffer(payload))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	var message types.Message
+	err = json.NewDecoder(resp.Body).Decode(&message)
+	if err != nil {
+		return nil, err
+	}
+
+	return &message, nil
+}
+
+func (c *Client) EditMessage(messageID uint64, newText string) (*types.Message, error) {
+	type editMessage struct {
+		Body string `json:"body"`
+	}
+
+	payload, err := json.Marshal(&editMessage{
+		Body: newText,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.MakeRequest(http.MethodPatch, "api/messages/"+strconv.FormatUint(messageID, 10), nil, bytes.NewReader(payload))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	var message types.Message
+	err = json.NewDecoder(resp.Body).Decode(&message)
+	if err != nil {
+		return nil, err
+	}
+
+	return &message, nil
+}
+
+func (c *Client) DeleteMessage(messageID uint64) error {
+	resp, err := c.MakeRequest(http.MethodDelete, "api/messages/"+strconv.FormatUint(messageID, 10), nil, nil)
+	if err != nil {
+		return nil
+	}
+	defer resp.Body.Close()
+
+	return nil
+}

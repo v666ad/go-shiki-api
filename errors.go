@@ -11,3 +11,12 @@ var (
 	ErrBadRequest          = errors.New("bad request")
 	ErrForbidden           = errors.New("forbidden")
 )
+
+type ShikiError struct {
+	Message string
+	Errors  []string
+}
+
+func (s ShikiError) Error() string {
+	return s.Message
+}

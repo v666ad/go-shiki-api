@@ -34,6 +34,7 @@ func getErrorFromBadResponse(resp *http.Response) error {
 	default:
 		data, err := io.ReadAll(resp.Body)
 		if err != nil && len(data) != 0 {
+			resp.Body.Close()
 			return errors.New("bad status " + resp.Request.Method + " " + resp.Request.URL.String() + " -> " + resp.Status + "\n" + string(data))
 		} else {
 			return errors.New("bad status " + resp.Request.Method + " " + resp.Request.URL.String() + " -> " + resp.Status)

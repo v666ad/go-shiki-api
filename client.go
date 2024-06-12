@@ -49,7 +49,7 @@ func (c *Client) MakeRequest(method string, path string, urlParams url.Values, d
 	)
 	url := ShikiSchema + "://" + ShikiDomain + "/" + path
 	if urlParams != nil {
-		url = ShikiSchema + "://" + ShikiDomain + "/" + path + "?" + urlParams.Encode()
+		url += "?" + urlParams.Encode()
 	}
 	req, err = http.NewRequest(method, url, data)
 	if err != nil {
